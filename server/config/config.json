@@ -1,0 +1,7 @@
+{
+    "server": {
+        "port": 1323,
+        "cert": "",
+        "token": "valid-key"
+    }
+}
