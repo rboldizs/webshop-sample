@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Status{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+ 
+    <br><label for="Version:">Version: ##VERSION##</label><br>
+    <br><label for="BuildId">Build id: ##BUILD_ID##</label><br>
+    <br><label for="BuildTime">Build time: ##BUILD_TIME##</label><br>
+    <br><label for="GitCommit">Git commit: ##GIT_COMMIT##</label><br>
+
+{% endblock %}
