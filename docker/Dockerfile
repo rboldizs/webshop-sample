@@ -1,17 +1,16 @@
-FROM python:3.7
+FROM python:3-alpine
 
 # Update and install dependencies
-RUN apt-get update
-RUN pip install Flask
+RUN pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org Flask
 
 # Add code
 ADD .build/* /opt/webapp/
 
 # Set the working directory
-WORKDIR /opt/webapp
+WORKDIR /opt/
 
 # Set environment variables
-ENV FLASK_APP=shop-backend
+ENV FLASK_APP=webapp
 ENV FLASK_ENV=development
 
 # Expose the application's port
