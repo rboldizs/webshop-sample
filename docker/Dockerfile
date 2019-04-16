@@ -1,4 +1,3 @@
-# Comments in Dockerfiles
 FROM python:3.7
 
 # Update and install dependencies
