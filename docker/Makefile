@@ -45,13 +45,13 @@ build: generate-build-info
 push-dev:
 	docker tag $(IMAGENAME):latest $(DEV_REGISTRY)/$(DEV_NAMESPACE)/$(IMAGENAME):$(RELEASE_TAG)
 	docker tag $(IMAGENAME):latest $(DEV_REGISTRY)/$(DEV_NAMESPACE)/$(IMAGENAME):latest
-	@docker login -u none -p $(DEV_REGISTRY_TOKEN) $(DEV_REGISTRY)
+	@docker login -u $(DEV_REGISTRY_USER) -p $(DEV_REGISTRY_TOKEN) $(DEV_REGISTRY)
 	@docker push $(DEV_REGISTRY)/$(DEV_NAMESPACE)/$(IMAGENAME):$(RELEASE_TAG)
 	@docker push $(DEV_REGISTRY)/$(DEV_NAMESPACE)/$(IMAGENAME):latest
 
 push-prod:
 	@docker tag $(IMAGENAME):latest $(PROD_REGISTRY)/$(PROD_NAMESPACE)/$(IMAGENAME):$(RELEASE_TAG)
-	@docker login -u none -p $(PROD_REGISTRY_TOKEN) $(PROD_REGISTRY)
+	@docker login -u $(DEV_REGISTRY_USER) -p $(PROD_REGISTRY_TOKEN) $(PROD_REGISTRY)
 	@docker push $(PROD_REGISTRY)/$(PROD_NAMESPACE)/$(IMAGENAME):$(RELEASE_TAG)
 
 .PHONY: 
