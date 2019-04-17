@@ -24,6 +24,8 @@ clean:
 prepare:
 	@echo "prepare docker build..."
 	@mkdir -p .build
+	@pwd
+	@ls -l 
 	@echo $(BINARY_PATH)
 	@cp -rf $(BINARY_PATH) $(DOCKER_DIR)/.build/
 	
