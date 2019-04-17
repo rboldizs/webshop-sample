@@ -1,0 +1,118 @@
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# gitlab build pipeline for go projects
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Author:     daniel.bedarf@t-systems.com
+# Changelog:
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# more details: https://docs.gitlab.com/ee/ci/yaml/
+
+# variables
+variables:
+  BINARY_PATH: "$CI_PROJECT_DIR/build/prometheus-webhook-receiver"
+  DOCKER_DIR: "$CI_PROJECT_DIR/docker"
+  
+# The ordering of elements in stages defines the ordering of jobs' execution
+stages:
+  - prepare
+  - build
+  - docker
+ 
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    # - $CI_PROJECT_DIR/vendor/
+    # - $CI_PROJECT_DIR/Gopkg.lock
+
+# executed before each job
+before_script:
+   - mkdir -p /python_build/
+   - cd /python_build/
+  - echo $CI_PROJECT_DIR
+  - echo $CI_PROJECT_NAME 
+  - cp -r $CI_PROJECT_DIR $CI_PROJECT_NAME
+  - cd $CI_PROJECT_NAME
+  - mkdir -p ~/.ssh
+  - echo "$REPO_DEPENDENCY_KEY" > ~/.ssh/id_rsa.repo-dependency-key
+  - chmod 600 ~/.ssh/id_rsa.repo-dependency-key
+  - git config --global url."git@git.appagile.io:".insteadOf "https://git.appagile.io/"
+  - echo "Host git.appagile.io" > ~/.ssh/config
+  - echo "Port 8443" >> ~/.ssh/config
+  - echo "PubkeyAuthentication yes" >> ~/.ssh/config
+  - echo "IdentityFile ~/.ssh/id_rsa.repo-dependency-key" >> ~/.ssh/config
+  - echo "StrictHostKeyChecking no " >>  ~/.ssh/config
+  - ssh git@git.appagile.io
+ 
+dependency:
+  stage: prepare
+  image: python:3-alpine
+  tags:
+    - services_paas
+  except:
+  script:
+    # build cache
+    - pwd
+    - ls -l
+    - make get-prerequisites
+ 
+
+unittest:
+  stage: build
+  image: python:3-alpine
+  tags:
+    - services_paas
+  except:
+  script:
+    - pwd
+    - ls -l
+    - make get-prerequisites test
+
+checkstyle:
+  stage: build
+  image: python:3-alpine
+  tags:
+    - services_paas
+  script:
+    - make get-prerequisites checkstyle
+  allow_failure: false
+
+# compile:
+#   stage: build
+#   image: golang:1.10
+#   tags:
+#     - services_paas
+#   script:
+#     - make get-prerequisites get-dependencies generate-build-info build
+#     - ls -l $GOPATH/src/git.appagile.io/monitoring/prometheus/$CI_PROJECT_NAME/build/
+#     - cp -r $GOPATH/src/git.appagile.io/monitoring/prometheus/$CI_PROJECT_NAME/build $CI_PROJECT_DIR
+#     - ls -l $CI_PROJECT_DIR
+#     - ls -l $CI_PROJECT_DIR/build/
+#   artifacts:
+#     name: "prometheus-webhook-receiver-$CI_COMMIT_REF_NAME-Build_$CI_JOB_ID"
+#     paths: [build/**]
+#     when: on_success
+#     expire_in: 6 mos
+
+
+dockerbuild-dev:
+  image: registry.appagile.io:443/service-paas-images/docker-openshift-cli:latest
+  # Uncomment for debug tracing
+  # variables:
+  #   CI_DEBUG_TRACE: "true"
+  before_script:
+    - cd $CI_PROJECT_DIR/docker
+    - export RELEASE_TAG=$CI_PROJECT_NAME-$CI_COMMIT_REF_NAME-Build_$CI_JOB_ID
+  dependencies:
+    - checkstyle
+    - unittest
+  stage: docker
+  tags:
+    - services_paas
+  script:
+    - echo "create docker image..."
+    - make build
+    - docker images    
+    - make push-dev
+  except:
+    - branch
+
+   

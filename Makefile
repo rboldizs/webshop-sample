@@ -1,7 +1,7 @@
 BINARY_DIR=$(CURDIR)/build
 BINARY_PATH=$(BINARY_DIR)/$(CI_PROJECT_NAME)
 
-TEMPLATE_DIR=$(CURDIR)/shop-backend/templates/api/
+TEMPLATE_DIR=$(CURDIR)/shop_backend/templates/api/
 DOCKER_DIR=$(CURDIR)/docker
 
 export BINARY_PATH
@@ -16,6 +16,12 @@ endif
 
 LDFLAGS=-ldflags ""
 
+get-prerequisites:
+	@pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org Flask
+	@pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org coverage 
+	@pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org pytest
+
+
 generate-build-info:
 	@echo "generating application build info ..."
 	@sed -e "s/##VERSION##/${VERSION}/g" \
@@ -29,9 +35,11 @@ build: generate-build-info
 
 test:
 	@echo "test ..."
-	@$(GOTEST_UNIT) -cover ./...
+	@export PYTHONPATH=.
+	@coverage run -m pytest
 
 checkstyle:
 	@echo "stylecheck ..."
-	@golint `go list ./...`
+	@export PYTHONPATH=.
+	@pylint shop_backend
 
