@@ -20,6 +20,7 @@ get-prerequisites:
 	@pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org Flask
 	@pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org coverage 
 	@pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org pytest
+	@pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org pylint
 
 
 generate-build-info:
@@ -37,6 +38,7 @@ test:
 	@echo "test ..."
 	@export PYTHONPATH=.
 	@coverage run -m pytest
+	@coverage report
 
 checkstyle:
 	@echo "stylecheck ..."
