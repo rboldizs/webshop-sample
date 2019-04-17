@@ -53,9 +53,7 @@ dependency:
   except:
   script:
     # build cache
-    - pwd
-    - ls -l
-    - make get-prerequisites
+     - make get-prerequisites
  
 
 unittest:
@@ -65,8 +63,6 @@ unittest:
     - services_paas
   except:
   script:
-    - pwd
-    - ls -l
     - make get-prerequisites test
 
 checkstyle:

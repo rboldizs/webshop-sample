@@ -5,7 +5,7 @@ ifndef BINARY_NAME
 BINARY_NAME=$(CI_PROJECT_NAME)
 endif
 
-BINARY_PATH=$(PROJECT_DIR)/shop-backend
+BINARY_PATH=$(PROJECT_DIR)/shop_backend
 
 
 ifndef IMAGENAME
@@ -24,9 +24,6 @@ clean:
 prepare:
 	@echo "prepare docker build..."
 	@mkdir -p .build
-	@pwd
-	@ls -l 
-	@echo $(BINARY_PATH)
 	@cp -rf $(BINARY_PATH) $(DOCKER_DIR)/.build/
 	
 build: prepare
