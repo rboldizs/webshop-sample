@@ -26,10 +26,10 @@ def create_app(test_config=None):
         pass
 
     from . import root
-    app.register_blueprint(root.bp)
+    app.register_blueprint(root.BP)
 
     from . import api
-    app.register_blueprint(api.bp)
+    app.register_blueprint(api.BP)
 
     return app
     
