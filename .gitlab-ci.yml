@@ -25,6 +25,9 @@ cache:
 
 # executed before each job
 before_script:
+  - apk update 
+  - apk upgrade
+  - apk add --no-cache bash git openssh
   - mkdir -p /python_build/
   - cd /python_build/
   - echo $CI_PROJECT_DIR
