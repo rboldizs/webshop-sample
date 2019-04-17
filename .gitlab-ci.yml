@@ -105,8 +105,7 @@ dockerbuild-dev:
     - services_paas
   script:
     - echo "create docker image..."
-    - make build
-    - docker images    
+    - make build 
     - make push-dev
   except:
     - branch
