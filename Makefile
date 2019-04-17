@@ -29,7 +29,7 @@ generate-build-info:
 		-e "s/##BUILD_ID##/${CI_BUILD_ID}/g" \
 		-e "s/##BUILD_TIME##/${BUILD_TIME}/g" \
 		-e "s/##GIT_COMMIT##/${CI_COMMIT_SHA}/g" \
-		$(TEMPLATE_DIR)/status.html 
+		-i $(TEMPLATE_DIR)/status.html 
 
 build: generate-build-info
 	@echo "start building ..."
