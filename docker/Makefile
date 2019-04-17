@@ -13,6 +13,9 @@ ifndef IMAGENAME
 IMAGENAME=$(CI_PROJECT_NAME)
 endif
 
+VERSION=1.0.0
+BUILD_TIME=`date +%FT%T%Z`
+
 ifndef RELEASE_TAG
 RELEASE_TAG=latest
 endif
