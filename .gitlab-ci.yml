@@ -27,7 +27,7 @@ cache:
 before_script:
   - apk update 
   - apk upgrade
-  - apk add --no-cache bash git openssh make gcc
+  - apk add --no-cache bash git openssh make gcc linux-headers
   - mkdir -p /python_build/
   - cd /python_build/
   - echo $CI_PROJECT_DIR
