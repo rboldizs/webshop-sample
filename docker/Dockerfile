@@ -1,7 +1,7 @@
 FROM python:3-alpine
 
 # Update and install dependencies
-RUN pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org Flask
+RUN pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org Flask BeautifulSoup4
 
 # Add code
 ADD .build/* /opt/webapp/

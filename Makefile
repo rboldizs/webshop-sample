@@ -21,6 +21,7 @@ get-prerequisites:
 	@pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org coverage 
 	@pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org pytest
 	@pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org pylint
+	@pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org BeautifulSoup4
 
 
 generate-build-info:
@@ -38,7 +39,7 @@ test:
 	@echo "test ..."
 	@export PYTHONPATH=.
 	@coverage run -m pytest
-	@coverage report
+	@coverage report -m
 
 checkstyle:
 	@echo "stylecheck ..."
