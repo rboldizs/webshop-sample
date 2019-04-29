@@ -25,8 +25,8 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    from . import root
-    app.register_blueprint(root.BP)
+    from . import uri_root
+    app.register_blueprint(uri_root.BP)
 
     from . import api
     app.register_blueprint(api.BP)
