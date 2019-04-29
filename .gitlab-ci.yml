@@ -47,7 +47,7 @@ before_script:
  
 dependency:
   stage: prepare
-  image: python:3-alpine
+  image: mtr.external.otc.telekomcloud.com/vsweets/python3-base:latest
   tags:
     - services_paas
   except:
@@ -58,7 +58,7 @@ dependency:
 
 unittest:
   stage: build
-  image: python:3-alpine
+  image: mtr.external.otc.telekomcloud.com/vsweets/python3-base:latest
   tags:
     - services_paas
   except:
@@ -67,7 +67,7 @@ unittest:
 
 checkstyle:
   stage: build
-  image: python:3-alpine
+  image: mtr.external.otc.telekomcloud.com/vsweets/python3-base:latest
   tags:
     - services_paas
   script:
@@ -76,7 +76,7 @@ checkstyle:
 
 compile:
   stage: build
-  image: python:3-alpine
+  image: mtr.external.otc.telekomcloud.com/vsweets/python3-base:latest
   tags:
     - services_paas
   script:
