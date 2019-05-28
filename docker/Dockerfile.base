@@ -1,0 +1,7 @@
+from python:3-alpine
+
+RUN apk update && \
+    apk upgrade && \
+    apk add --no-cache bash git openssh make gcc libc-dev musl-dev
+
+RUN pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org Flask coverage pytest pylint BeautifulSoup4
