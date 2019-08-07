@@ -1,87 +1,55 @@
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# gitlab build pipeline for go projects
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Author:     daniel.bedarf@t-systems.com
-# Changelog:
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# more details: https://docs.gitlab.com/ee/ci/yaml/
-
 # variables
 variables:
-  BINARY_PATH: "$CI_PROJECT_DIR/build/prometheus-webhook-receiver"
+
   DOCKER_DIR: "$CI_PROJECT_DIR/docker"
-  
+  GITLAB_HOST: "gitlab-aotd004.appagile-dev.de"
+
 # The ordering of elements in stages defines the ordering of jobs' execution
 stages:
   - prepare
   - build
-  - docker
- 
+  - quality
+  - nexus
+
+
 cache:
-  key: ${CI_COMMIT_REF_SLUG}
   paths:
-    # - $CI_PROJECT_DIR/vendor/
-    # - $CI_PROJECT_DIR/Gopkg.lock
+    - dist/
+
 
 # executed before each job
 before_script:
-  - apk update 
+  - apk update
   - apk upgrade
   - apk add --no-cache bash git openssh make gcc libc-dev musl-dev
-  - mkdir -p /python_build/
-  - cd /python_build/
   - echo $CI_PROJECT_DIR
-  - echo $CI_PROJECT_NAME 
-  - cp -r $CI_PROJECT_DIR $CI_PROJECT_NAME
-  - cd $CI_PROJECT_NAME
-  - mkdir -p ~/.ssh
-  - echo "$REPO_DEPENDENCY_KEY" > ~/.ssh/id_rsa.repo-dependency-key
-  - chmod 600 ~/.ssh/id_rsa.repo-dependency-key
-  - git config --global url."git@git.appagile.io:".insteadOf "https://git.appagile.io/"
-  - echo "Host git.appagile.io" > ~/.ssh/config
-  - echo "Port 8443" >> ~/.ssh/config
-  - echo "PubkeyAuthentication yes" >> ~/.ssh/config
-  - echo "IdentityFile ~/.ssh/id_rsa.repo-dependency-key" >> ~/.ssh/config
-  - echo "StrictHostKeyChecking no " >>  ~/.ssh/config
-  - ssh git@git.appagile.io
- 
+  - echo $CI_PROJECT_NAME
+  - pwd
+
 dependency:
   stage: prepare
   image: mtr.external.otc.telekomcloud.com/vsweets/python3-base:latest
-  tags:
-    - services_paas
   except:
   script:
     # build cache
      - make get-prerequisites
- 
-
-unittest:
-  stage: build
-  image: mtr.external.otc.telekomcloud.com/vsweets/python3-base:latest
-  tags:
-    - services_paas
-  except:
-  script:
-    - make get-prerequisites test
 
 checkstyle:
   stage: build
   image: mtr.external.otc.telekomcloud.com/vsweets/python3-base:latest
-  tags:
-    - services_paas
   script:
     - make get-prerequisites checkstyle
   allow_failure: false
 
+
+
+
 compile:
   stage: build
   image: mtr.external.otc.telekomcloud.com/vsweets/python3-base:latest
-  tags:
-    - services_paas
   script:
     - make get-prerequisites generate-build-info build
-    
+
   artifacts:
     name: "shop_backend-$CI_COMMIT_REF_NAME-Build_$CI_JOB_ID"
     paths: [build/**]
@@ -89,25 +57,69 @@ compile:
     expire_in: 6 mos
 
 
-dockerbuild-dev:
-  image: registry.appagile.io:443/service-paas-images/docker-openshift-cli:latest
-  # Uncomment for debug tracing
-  # variables:
-  #   CI_DEBUG_TRACE: "true"
+
+unittest:
+  stage: build
+  image: mtr.external.otc.telekomcloud.com/vsweets/python3-base:latest
+
+  artifacts:
+    name: "coverage.xml"
+    paths: ["*.xml"]
+    when: on_success
+    expire_in: 5 min
+
+  except:
+  script:
+    - make get-prerequisites test
+
+
+sonarqube_verify:
+  stage: quality
+  image: mtr.external.otc.telekomcloud.com/vsweets/sonar-scanner
+  
+  dependencies:
+    - unittest
+
+  script:
+    - ls -la
+    - sonar-scanner -Dproject.settings=./sonar-scanner-python.properties
+
+
+docker:
+  # image: registry.appagile.io:443/service-paas-images/docker-openshift-cli:latest
+  image: docker:stable
+  services:
+    - docker:dind
+  variables:
+    # When using dind service we need to instruct docker, to talk with the
+    # daemon started inside of the service. The daemon is available with
+    # a network connection instead of the default /var/run/docker.sock socket.
+    #
+    # The 'docker' hostname is the alias of the service container as described at
+    # https://docs.gitlab.com/ee/ci/docker/using_docker_images.html#accessing-the-services
+    #
+    # Note that if you're using Kubernetes executor, the variable should be set to
+    # tcp://localhost:2375 because of how Kubernetes executor connects services
+    # to the job container
+    DOCKER_HOST: tcp://localhost:2375/
+    # When using dind, it's wise to use the overlayfs driver for
+    # improved performance.
+    DOCKER_DRIVER: overlay2
   before_script:
+    - apk add --update make bash
     - cd $CI_PROJECT_DIR/docker
     - export RELEASE_TAG=$CI_PROJECT_NAME-$CI_COMMIT_REF_NAME-Build_$CI_JOB_ID
-  dependencies:
-    - checkstyle
-    - unittest
-  stage: docker
+    - docker info
+  stage: nexus
   tags:
-    - services_paas
   script:
-    - echo "create docker image..."
-    - make build 
-    - make push-dev
-  except:
-    - branch
+    - make docker
+    - sleep 15
+  dependencies: []
 
-   
+
+
+
+
+
+
