@@ -22,6 +22,7 @@ get-prerequisites:
 	@pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org pytest
 	@pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org pylint
 	@pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org BeautifulSoup4
+	@pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org flask-cors
 
 
 generate-build-info:
@@ -34,12 +35,15 @@ generate-build-info:
 
 build: generate-build-info
 	@echo "start building ..."
+	cp -rf ./docs/ ./build/
 
 test:
 	@echo "test ..."
 	@export PYTHONPATH=.
+	@coverage erase
 	@coverage run -m pytest
 	@coverage report -m
+	@coverage xml -i  
 
 checkstyle:
 	@echo "stylecheck ..."

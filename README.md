@@ -15,4 +15,7 @@ flask run
 
 Default port is 5000.
 
-
+```plantuml
+Bob -> Alice : hello
+Alice -> Bob : Go Away
+```

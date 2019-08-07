@@ -12,8 +12,11 @@ BP = Blueprint('api', __name__, url_prefix='/api')
 @BP.route('/status', methods=('GET', 'POST'))
 def status():
     """Status blueprint will create a view with build info"""
-    if request.user_agent.browser is None:
-        return render_json()
+
+    ##Added Code smell as an example, to be detected by the SonarQube##
+    if request.method == 'GET':
+        if request.user_agent.browser is None:
+            return render_json()
 
     if request.method == 'GET':
         return render_template('api/status.html')

@@ -1,0 +1,135 @@
+= McPipe's code quality gate
+
+By deploying the Mcpipe's pipeline, code quality check stage will be deployed automatically. The code analytic tool used in McPipe is https://www.sonarqube.org/[SonarQube]. 
+
+SonarQube is provided as quality stage, the code analysis is performed automaticaly during the run of the pipeline.
+
+:imagesdir: images
+
+image::pipeline.png[pipeline]
+
+=== Configuration
+
+Quality stage is defined in the .gitlab-ci.yml file: 
+
+
+[source, yaml]
+....
+sonarqube_verify:
+  stage: quality
+  image: docker.io/newtmitch/sonar-scanner:3.3.0-alpine
+  
+  dependencies:
+    - unittest
+
+  script:
+    - ls -la
+    - sonar-scanner -Dproject.settings=./sonar-scanner-python.properties
+....
+
+
+Precondition of the SonarQube is the scanner and the sonar-scanner property file. The scanner is provided with docker image. 
+
+The scanner properties file needs to be configured and provided. The configuration is provided in the target repository :
+
+image::scanner-properties.png[properties]
+
+Sample:
+[source, txt]
+....
+#Configure here general information about the environment, such as SonarQube server connection details for example
+#See https://docs.sonarqube.org/latest/analysis/analysis-parameters
+
+#----- SonarQube server
+sonar.host.url=${env.MCPIPE_SONARQUBE_URL}
+sonar.login=${env.MCPIPE_SONARQUBE_USER}
+sonar.password=${env.MCPIPE_SONARQUBE_PWD}
+
+
+#Project
+sonar.projectKey=io.mcs-paas.McPipe-Python
+sonar.projectName=McPipe-Python
+#sonar.projectVersion
+
+#Specify different source locations
+sonar.projectBaseDir=${env.CI_PROJECT_DIR}
+sonar.sources=./shop_backend
+
+sonar.python.coverage.reportPaths=*coverage*.xml
+
+sonar.exclusions=**/*_.pyc,**/.pytest_cache/**,**/instance/**,**/__pycache__/**
+
+#Test Folders
+sonar.tests=./tests
+sonar.test.inclusions=**/*test*.py
+sonar.test.exclusions=**/__pycache__/**,**/*.pyc/**
+
+#Default source code encoding
+#sonar.sourceEncoding=UTF-8
+....
+
+For details about the property values, please consult the official https://docs.sonarqube.org/latest/analysis/analysis-parameters/[SonarQube documentation].
+
+Common values(like SonarQube url, user, password and project details) are provided automatically by the McPipe's env variables (e.q MCPIPE_SONARQUBE_URL, MCPIPE_SONARQUBE_USER ...)
+
+=== Test coverage
+
+SonarQube will NOT run any test cases or generate any test report. The report must be provided. Therefore the Quality stage has its dependency toward Unittest:
+
+[source, yaml]
+....
+sonarqube_verify:
+  stage: quality
+  image: docker.io/newtmitch/sonar-scanner:3.3.0-alpine
+  
+  dependencies:
+    - unittest
+
+  script:
+    - ls -la
+    - sonar-scanner -Dproject.settings=./sonar-scanner-python.properties
+....
+
+Unittest job of the Build stage, shares an artifact coverage.xml file:
+
+[source, yaml]
+....
+unittest:
+  stage: build
+  image: mtr.external.otc.telekomcloud.com/vsweets/python3-base:latest
+
+  artifacts:
+    name: "coverage.xml"
+    paths: ["*.xml"]
+    when: on_success
+    expire_in: 5 min
+
+  except:
+  script:
+    - make get-prerequisites test
+
+....
+
+which will be then used in SonarQube analysis for test coverage in sonar-scanner properties file(sonar-scanner-python.properties):
+
+[source, txt]
+....
+
+sonar.python.coverage.reportPaths=*coverage*.xml
+....
+
+
+
+=== Usage
+
+After configuration of the Quality stage in .gitlab-ci.yml file and providing the suitable properties file(sonar-scanner-python.properties) there is not much else do to, except to verify the results in SonarQube, since McPipe will run code analysis automatically once the pipeline is trigerred.
+
+The SonarQube URL will be provided in the Quality stage job log file:
+
+image::sonarqube-res.png[results]
+
+By visiting the provided URL SonarQube UI will provide more details about the analysis:
+
+image::sonarqube-ui.png[UI]
+
+

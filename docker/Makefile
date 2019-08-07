@@ -42,16 +42,10 @@ build: generate-build-info
 	@echo "create docker image..."
 	@docker build --tag $(IMAGENAME):latest .
 
-push-dev:
-	docker tag $(IMAGENAME):latest $(DEV_REGISTRY)/$(DEV_NAMESPACE)/$(IMAGENAME):$(RELEASE_TAG)
-	docker tag $(IMAGENAME):latest $(DEV_REGISTRY)/$(DEV_NAMESPACE)/$(IMAGENAME):latest
-	@docker login -u $(DEV_REGISTRY_USER) -p $(DEV_REGISTRY_TOKEN) $(DEV_REGISTRY)
-	@docker push $(DEV_REGISTRY)/$(DEV_NAMESPACE)/$(IMAGENAME):$(RELEASE_TAG)
-	@docker push $(DEV_REGISTRY)/$(DEV_NAMESPACE)/$(IMAGENAME):latest
+docker: build
+	docker tag $(IMAGENAME):latest $(MCPIPE_REGISTRY_SERVER)/$(IMAGENAME):latest
+	@docker login -u $(MCPIPE_REGISTRY_USER) -p $(MCPIPE_REGISTRY_TOKEN) $(MCPIPE_REGISTRY_SERVER)
+	@docker push $(MCPIPE_REGISTRY_SERVER)/$(IMAGENAME):latest
 
-push-prod:
-	@docker tag $(IMAGENAME):latest $(PROD_REGISTRY)/$(PROD_NAMESPACE)/$(IMAGENAME):$(RELEASE_TAG)
-	@docker login -u $(DEV_REGISTRY_USER) -p $(PROD_REGISTRY_TOKEN) $(PROD_REGISTRY)
-	@docker push $(PROD_REGISTRY)/$(PROD_NAMESPACE)/$(IMAGENAME):$(RELEASE_TAG)
 
 .PHONY: 
