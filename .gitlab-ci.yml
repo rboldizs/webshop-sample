@@ -109,6 +109,7 @@ docker:
     - apk add --update make bash
     - cd $CI_PROJECT_DIR/docker
     - export RELEASE_TAG=$CI_PROJECT_NAME-$CI_COMMIT_REF_NAME-Build_$CI_JOB_ID
+    - sleep 15
     - docker info
   stage: nexus
   tags:
